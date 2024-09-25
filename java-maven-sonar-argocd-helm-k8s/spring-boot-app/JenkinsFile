@@ -13,16 +13,13 @@ pipeline {
         sh 'cd java-maven-sonar-argocd-helm-k8s/spring-boot-app && mvn clean package'
       }
     }
-    stage('Static Code Analysis') {
-      environment {
-        SONAR_URL = "http://44.220.149.115:9000"
-      }
-      steps {
-        withCredentials([string(credentialsId: 'Jenkins_sonarqube_id', variable: 'SONAR_AUTH_TOKEN')]) {
-          sh 'cd java-maven-sonar-argocd-helm-k8s/spring-boot-app && mvn sonar:sonar -Dsonar.login=$SONAR_AUTH_TOKEN -Dsonar.host.url=${SONAR_URL}'
+   stage('SonarQube analysis') {
+            steps {
+                withSonarQubeEnv('SonarQube Server') {
+                    sh "cd java-maven-sonar-argocd-helm-k8s/spring-boot-app && mvn sonar:sonar"
+                }
+            }
         }
-      }
-    }
     stage('Build and Push Docker Image') {
       environment {
         DOCKER_IMAGE = "dockerhub1994/ultimate-cicd-011:${BUILD_NUMBER}"
